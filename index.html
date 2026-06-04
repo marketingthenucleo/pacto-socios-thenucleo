@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pacto de Socios · Portal TheNucleo APP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --bg:#0A0F1F;--bg-2:#0E1530;--surface:#141C39;--surface-2:#1B2447;--line:rgba(255,255,255,.10);
+  --primary:#5B8CFF;--accent:#16E0BD;--amber:#FFB020;--pink:#FF6B9D;
+  --text:#EAF0FF;--muted:#93A1C6;--good:#16E0BD;--bad:#FF6B6B;
+  --font-head:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--maxw:1120px;
+  --c-benja:#5B8CFF;--c-tn:#16E0BD;--c-hace:#FFB020;--c-zen:#FF6B9D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:64px clamp(28px,6vw,110px);opacity:0;visibility:hidden;transform:translateY(24px) scale(.99);
+  transition:opacity .5s ease,transform .5s ease;
+  background:radial-gradient(1200px 700px at 12% -10%,rgba(91,140,255,.16),transparent 60%),
+    radial-gradient(1000px 700px at 110% 120%,rgba(22,224,189,.12),transparent 55%),
+    linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%)}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.slide-inner{width:100%;max-width:var(--maxw);margin:0 auto}
+.eyebrow{font-family:var(--font-head);font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+  font-size:13px;color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--accent);display:inline-block}
+h1{font-family:var(--font-head);font-weight:700;font-size:clamp(34px,5.4vw,62px);line-height:1.04;letter-spacing:-.02em}
+h2{font-family:var(--font-head);font-weight:700;font-size:clamp(26px,3.6vw,42px);line-height:1.1;letter-spacing:-.01em;margin-bottom:8px}
+h3{font-family:var(--font-head);font-weight:600;font-size:20px;margin-bottom:6px}
+p.lead{font-size:clamp(16px,1.5vw,21px);color:var(--muted);line-height:1.55;max-width:62ch;margin-top:14px}
+.muted{color:var(--muted)}.hl{color:var(--accent)}.hl-b{color:var(--primary)}
+strong{color:#fff;font-weight:700}
+.grid{display:grid;gap:18px}.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:repeat(3,1fr)}.cols-4{grid-template-columns:repeat(4,1fr)}
+.split{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.card{background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line);
+  border-radius:18px;padding:24px;box-shadow:0 18px 40px rgba(0,0,0,.28)}
+.card .ic{font-size:24px;margin-bottom:12px;display:block}
+.card h3{margin-bottom:6px}.card p{color:var(--muted);font-size:14.5px;line-height:1.5}
+/* clickable affordance */
+.clk{cursor:pointer;position:relative;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.clk:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 22px 48px rgba(0,0,0,.4)}
+.clk::after{content:"ⓘ";position:absolute;top:12px;right:14px;font-size:14px;color:var(--accent);opacity:.55;transition:.2s}
+.clk:hover::after{opacity:1}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;
+  background:rgba(91,140,255,.12);border:1px solid rgba(91,140,255,.32);color:#cfe;font-size:13px;font-weight:600}
+.pill.clk::after{position:static;margin-left:4px}
+.kpi{font-family:var(--font-head);font-weight:700;font-size:clamp(30px,4vw,48px);line-height:1}
+.kpi.b{color:var(--primary)}.kpi.a{color:var(--accent)}.kpi.am{color:var(--amber)}.kpi.p{color:var(--pink)}
+.tag{font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+.chip{display:inline-block;padding:4px 10px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid var(--line)}
+.chip.good{color:var(--good);background:rgba(22,224,189,.10);border-color:rgba(22,224,189,.3)}
+.chip.bad{color:var(--bad);background:rgba(255,107,107,.10);border-color:rgba(255,107,107,.3)}
+ul.clean{list-style:none;display:flex;flex-direction:column;gap:12px;margin-top:10px}
+ul.clean li{display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:15.5px;line-height:1.45}
+ul.clean li::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;margin-top:7px;background:var(--accent);box-shadow:0 0 0 4px rgba(22,224,189,.14)}
+ul.clean.blue li::before{background:var(--primary);box-shadow:0 0 0 4px rgba(91,140,255,.14)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px}
+.legend span{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:500}
+.dot{width:12px;height:12px;border-radius:4px;display:inline-block}
+.founder{display:flex;align-items:center;gap:14px}
+.avatar{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-family:var(--font-head);font-weight:700;font-size:18px;color:#06122a}
+.timeline{position:relative;margin-top:26px;padding-left:6px}
+.timeline::before{content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--primary),var(--accent))}
+.tl-item{position:relative;padding:0 0 22px 40px}
+.tl-item::before{content:"";position:absolute;left:4px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--bg);border:3px solid var(--accent)}
+.tl-item .when{font-family:var(--font-head);font-weight:600;color:var(--primary);font-size:13.5px;letter-spacing:.03em}
+.tl-item h3{font-size:16px;margin:2px 0 3px}.tl-item p{color:var(--muted);font-size:13.5px;line-height:1.4}
+.chart-wrap{position:relative;height:clamp(260px,42vh,420px)}
+.barwrap{display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.bar-row{display:grid;grid-template-columns:96px 1fr 54px;align-items:center;gap:14px}
+.bar-row .nm{font-weight:700;font-size:15px}
+.bar-track{height:30px;border-radius:9px;background:rgba(255,255,255,.06);overflow:hidden;display:flex}
+.bar-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;color:#06122a}
+.bar-row .tot{font-family:var(--font-head);font-weight:700;text-align:right}
+/* chrome */
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));z-index:50;transition:width .4s ease}
+.chrome{position:fixed;bottom:22px;right:26px;display:flex;align-items:center;gap:14px;z-index:50}
+.counter{font-family:var(--font-head);font-weight:600;font-size:13px;color:var(--muted);letter-spacing:.06em}
+.nav-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(20,28,57,.7);
+  color:var(--text);cursor:pointer;font-size:18px;display:grid;place-items:center;transition:.2s;backdrop-filter:blur(6px)}
+.nav-btn:hover{background:var(--primary);border-color:var(--primary);color:#06122a}
+.brand{position:fixed;bottom:24px;left:26px;z-index:50;font-family:var(--font-head);font-weight:600;font-size:13px;color:var(--muted);letter-spacing:.04em}
+.brand b{color:var(--text)}
+.hint{position:fixed;top:18px;right:26px;z-index:50;font-size:12px;color:var(--muted);opacity:.7}
+.cover-mark{font-family:var(--font-head);font-weight:700;font-size:15px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+.cover-meta{display:flex;gap:28px;margin-top:34px;flex-wrap:wrap}
+.cover-meta div .tag{display:block;margin-bottom:4px}.cover-meta div b{font-family:var(--font-head);font-size:17px}
+.glow-orb{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(22,224,189,.22),transparent 65%);right:-120px;top:-80px;filter:blur(8px);pointer-events:none}
+/* ============ MODAL ============ */
+.modal-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(5,8,18,.72);backdrop-filter:blur(7px);opacity:0;visibility:hidden;transition:.28s}
+.modal-overlay.show{opacity:1;visibility:visible}
+.modal{position:relative;width:100%;max-width:620px;max-height:84vh;overflow:auto;
+  background:linear-gradient(180deg,#16204a,#111834);border:1px solid rgba(91,140,255,.4);border-radius:22px;
+  padding:34px 34px 26px;box-shadow:0 40px 90px rgba(0,0,0,.6);transform:translateY(18px) scale(.98);transition:.28s}
+.modal-overlay.show .modal{transform:none}
+.modal-badge{display:inline-block;font-family:var(--font-head);font-weight:600;font-size:12px;letter-spacing:.12em;
+  text-transform:uppercase;color:#06122a;background:var(--accent);padding:5px 12px;border-radius:8px;margin-bottom:16px}
+.modal h3{font-family:var(--font-head);font-size:24px;color:#fff;margin-bottom:14px;line-height:1.15}
+.modal-body{color:#c9d4ee;font-size:15.5px;line-height:1.62}
+.modal-body strong{color:#fff}
+.modal-body ul{margin:10px 0 0 2px;list-style:none;display:flex;flex-direction:column;gap:8px}
+.modal-body ul li{display:flex;gap:10px}
+.modal-body ul li::before{content:"›";color:var(--accent);font-weight:700}
+.modal-foot{margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);font-style:italic}
+.modal-x{position:absolute;top:16px;right:18px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(255,255,255,.05);color:var(--text);font-size:20px;cursor:pointer;line-height:1;transition:.2s}
+.modal-x:hover{background:var(--bad);border-color:var(--bad);color:#fff}
+@media (max-width:820px){.split,.cols-2,.cols-3,.cols-4{grid-template-columns:1fr}.slide{padding:48px 24px}}
+@media print{body{overflow:visible}.deck{height:auto}
+  .slide{position:relative;opacity:1!important;visibility:visible!important;transform:none!important;height:100vh;page-break-after:always;break-after:page}
+  .chrome,.brand,.hint,.progress,.modal-overlay{display:none!important}.clk::after{display:none}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="hint">← → navegar · clic en tarjetas <span style="color:var(--accent)">ⓘ</span> = cláusula · F pantalla completa</div>
+<div class="deck" id="deck">
+
+  <!-- 1 · COVER -->
+  <section class="slide active">
+    <div class="glow-orb"></div>
+    <div class="slide-inner">
+      <div class="cover-mark">Portal TheNucleo APP, S.L.</div>
+      <h1 style="margin-top:26px">Pacto de Socios<br><span class="hl">Cómo repartimos propiedad, poder y futuro</span></h1>
+      <p class="lead">Una propuesta para alinear a los cuatro fundadores antes de constituir la sociedad. Reglas claras hoy para construir tranquilos mañana.</p>
+      <div class="cover-meta">
+        <div><span class="tag">Sociedad</span><b>S.L. · Almería</b></div>
+        <div><span class="tag">Fundadores</span><b>Benja · TheNucleo · Hacelerix · Zenyx</b></div>
+        <div><span class="tag">Documento</span><b>v2 · para revisión conjunta</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · POR QUÉ -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Por qué un pacto</div>
+      <h2>El 65% de las startups que fracasan lo hacen por conflictos entre socios, no por el producto.</h2>
+      <p class="lead">No firmamos esto por desconfianza. Lo firmamos para que, pase lo que pase, los cuatro sepamos exactamente a qué atenernos. Este pacto responde por escrito a tres preguntas incómodas:</p>
+      <div class="grid cols-3" style="margin-top:30px">
+        <div class="card"><span class="ic">🧩</span><h3>¿Quién tiene qué?</h3><p>Reparto del capital, qué es fijo y qué se gana con trabajo (vesting).</p></div>
+        <div class="card"><span class="ic">⚖️</span><h3>¿Quién decide qué?</h3><p>Gobierno de la sociedad y qué decisiones nos exigen acuerdo.</p></div>
+        <div class="card"><span class="ic">🚪</span><h3>¿Qué pasa si alguien se va?</h3><p>Reglas justas de salida que protegen al que se queda y al que se va.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · LOS 4 FUNDADORES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Los cuatro fundadores</div>
+      <h2>Cada uno aporta una pieza distinta del motor.</h2>
+      <div class="grid cols-2" style="margin-top:26px">
+        <div class="card"><div class="founder"><div class="avatar" style="background:var(--c-benja)">B</div><div><h3>Benja — CEO</h3><span class="tag">Dirección · Producto · Fundraising</span></div></div></div>
+        <div class="card"><div class="founder"><div class="avatar" style="background:var(--c-hace)">H</div><div><h3>Hacelerix — Producto / Dev</h3><span class="tag">MVP · Integraciones · Estabilidad</span></div></div></div>
+        <div class="card"><div class="founder"><div class="avatar" style="background:var(--c-tn)">TN</div><div><h3>TheNucleo — Marketing</h3><span class="tag">Ads · Generación de leads</span></div></div></div>
+        <div class="card"><div class="founder"><div class="avatar" style="background:var(--c-zen)">Z</div><div><h3>Zenyx — Ventas</h3><span class="tag">Early adopters · MRR · Retención</span></div></div></div>
+      </div>
+      <p class="lead" style="margin-top:22px">El pacto liga el equity de cada uno a la pieza que le toca aportar.</p>
+    </div>
+  </section>
+
+  <!-- 4 · CAP TABLE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">El reparto · Cap table</div>
+      <div class="split">
+        <div>
+          <h2>Propiedad totalmente diluida</h2>
+          <p class="lead">Cuando todos cumplamos lo comprometido, así queda la tarta. Nadie tiene mayoría: las decisiones grandes se toman entre varios.</p>
+          <div class="legend">
+            <span><i class="dot" style="background:var(--c-benja)"></i> Benja · 30%</span>
+            <span><i class="dot" style="background:var(--c-tn)"></i> TheNucleo · 25%</span>
+            <span><i class="dot" style="background:var(--c-hace)"></i> Hacelerix · 25%</span>
+            <span><i class="dot" style="background:var(--c-zen)"></i> Zenyx · 20%</span>
+          </div>
+          <div class="pill clk" data-clause="captable" style="margin-top:22px">40% fijo el Día 1 · 60% se gana con hitos</div>
+        </div>
+        <div class="chart-wrap"><canvas id="capChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · VESTING -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">El equity se gana · Vesting del 60%</div>
+      <h2>El 40% es tuyo desde el Día 1. El 60% restante se desbloquea cumpliendo hitos.</h2>
+      <p class="lead">Si alguien no cumple, esas participaciones vuelven a la sociedad (opción de compra a valor nominal). Justo: cobras por lo que aportas.</p>
+      <div class="barwrap clk" data-clause="vesting" style="margin-top:24px">
+        <div class="bar-row"><span class="nm" style="color:var(--c-benja)">Benja</span><div class="bar-track"><div class="bar-seg" style="width:33.3%;background:var(--c-benja)">Base 10%</div><div class="bar-seg" style="width:66.7%;background:var(--c-benja);opacity:.45">Vesting +20%</div></div><span class="tot">30%</span></div>
+        <div class="bar-row"><span class="nm" style="color:var(--c-tn)">TheNucleo</span><div class="bar-track"><div class="bar-seg" style="width:56%;background:var(--c-tn)">Base 14%</div><div class="bar-seg" style="width:44%;background:var(--c-tn);opacity:.45">+11%</div></div><span class="tot">25%</span></div>
+        <div class="bar-row"><span class="nm" style="color:var(--c-hace)">Hacelerix</span><div class="bar-track"><div class="bar-seg" style="width:40%;background:var(--c-hace)">Base 10%</div><div class="bar-seg" style="width:60%;background:var(--c-hace);opacity:.45">Vesting +15%</div></div><span class="tot">25%</span></div>
+        <div class="bar-row"><span class="nm" style="color:var(--c-zen)">Zenyx</span><div class="bar-track"><div class="bar-seg" style="width:30%;background:var(--c-zen)">Base 6%</div><div class="bar-seg" style="width:70%;background:var(--c-zen);opacity:.45">Vesting +14%</div></div><span class="tot">20%</span></div>
+      </div>
+      <div class="legend"><span><i class="dot" style="background:#fff"></i> Color sólido = fijo</span><span><i class="dot" style="background:rgba(255,255,255,.4)"></i> Color claro = por hitos</span></div>
+    </div>
+  </section>
+
+  <!-- 6 · ROADMAP HITOS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Roadmap de hitos</div>
+      <div class="split" style="align-items:start">
+        <div>
+          <h2>Lo que cada uno tiene que conseguir</h2>
+          <p class="lead">El vesting no es por tiempo de silla: es por resultados. Benja consolida por permanencia (4 años, con cliff de 12 meses); el resto, por hitos de negocio.</p>
+          <div class="grid cols-2" style="margin-top:18px">
+            <div class="card clk" data-clause="vesting" style="padding:16px"><span class="kpi a">+20%</span><p class="tag" style="margin-top:6px">Benja · 4 años lineal</p></div>
+            <div class="card clk" data-clause="vesting" style="padding:16px"><span class="kpi am">+15%</span><p class="tag" style="margin-top:6px">Hacelerix · 3 hitos</p></div>
+            <div class="card clk" data-clause="vesting" style="padding:16px"><span class="kpi p">+14%</span><p class="tag" style="margin-top:6px">Zenyx · 3 hitos</p></div>
+            <div class="card clk" data-clause="vesting" style="padding:16px"><span class="kpi a">+11%</span><p class="tag" style="margin-top:6px">TheNucleo · 3 hitos</p></div>
+          </div>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><div class="when">+30 días</div><h3>MVP en producción</h3><p>Hacelerix · 5 clientes recurrentes sin incidencias</p></div>
+          <div class="tl-item"><div class="when">Tras MVP</div><h3>Primeros 5 clientes de pago</h3><p>Zenyx · early adopters reales, sin prueba gratis</p></div>
+          <div class="tl-item"><div class="when">Mes 12</div><h3>Cliff de Benja</h3><p>Consolida 5% y empieza el goteo mensual</p></div>
+          <div class="tl-item"><div class="when">Continuo</div><h3>MRR ≥ 3.000 €</h3><p>Zenyx · 3 meses seguidos desde su red</p></div>
+          <div class="tl-item"><div class="when">Escala</div><h3>25 agencias estables</h3><p>Hacelerix · 2 meses sin caídas críticas</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · GOBIERNO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Quién decide qué · Gobierno</div>
+      <h2>Agilidad en el día a día, acuerdo en lo importante.</h2>
+      <div class="grid cols-2" style="margin-top:24px">
+        <div class="card clk" data-clause="govBenja">
+          <h3 class="hl-b">Día a día → Benja</h3>
+          <p>Benja es <strong>administrador único</strong>: firma, contrata y ejecuta sin frenar el negocio. En empates, su <strong>voto de calidad</strong> desempata… salvo en las decisiones grandes.</p>
+        </div>
+        <div class="card clk" data-clause="reservadas">
+          <h3 class="hl">Decisiones grandes → 75%</h3>
+          <p>Vender la empresa, ampliar capital, endeudarse fuerte, tocar la propiedad intelectual, repartir dividendos… exigen el <strong>75% del capital</strong>. Con nuestro reparto, eso obliga a sumar <strong>3 de los 4</strong>. Nadie pisa a nadie.</p>
+        </div>
+      </div>
+      <div class="legend" style="margin-top:18px">
+        <span><i class="dot" style="background:var(--primary)"></i> ~16 materias reservadas estilo VC</span>
+        <span><i class="dot" style="background:var(--accent)"></i> El socio afectado no vota en lo que le toca</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · LOCK-UP -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Compromiso · Lock-up</div>
+      <div class="split">
+        <div>
+          <h2>Los primeros 12 meses, todos dentro.</h2>
+          <p class="lead">Durante el primer año nadie vende ni abandona el proyecto. Es el periodo en el que se construye lo difícil; necesitamos a los cuatro remando.</p>
+          <ul class="clean blue">
+            <li>Sin transmitir participaciones durante el lock-up.</li>
+            <li>Sin abandono operativo: la dejadez cuenta como abandono.</li>
+            <li>Cada socio con su dedicación pactada (Anexo II).</li>
+          </ul>
+        </div>
+        <div class="card clk" data-clause="lockup" style="text-align:center;padding:40px">
+          <span class="kpi b" style="font-size:84px">12</span>
+          <p class="tag" style="margin-top:10px">meses de permanencia mínima</p>
+          <div class="pill" style="margin-top:20px">Incumplir = Bad Leaver</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · LEAVERS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Si alguien se va · Leavers</div>
+      <h2>Dos formas de salir, dos consecuencias.</h2>
+      <div class="grid cols-2" style="margin-top:22px">
+        <div class="card clk" data-clause="goodleaver" style="border-color:rgba(22,224,189,.35)">
+          <span class="chip good">GOOD LEAVER</span>
+          <h3 style="margin-top:12px">Salida amistosa o de fuerza mayor</h3>
+          <p>Fallecimiento, incapacidad, despido improcedente o salida pactada tras el lock-up.</p>
+          <ul class="clean" style="margin-top:12px">
+            <li><strong>Conservas</strong> lo que ya tenías consolidado.</li>
+            <li>La sociedad puede recomprar a <strong>valor de mercado</strong>.</li>
+          </ul>
+        </div>
+        <div class="card clk" data-clause="badleaver" style="border-color:rgba(255,107,107,.35)">
+          <span class="chip bad">BAD LEAVER</span>
+          <h3 style="margin-top:12px">Abandono o incumplimiento</h3>
+          <p>Te vas antes de tiempo, dejas de cumplir o hay fraude.</p>
+          <ul class="clean" style="margin-top:12px">
+            <li><strong>Pierdes</strong> todo lo no consolidado.</li>
+            <li>Recompra de lo consolidado a <strong>valor nominal</strong>, con escalado: cuanto antes te vas, más recupera la sociedad.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · VALORACIÓN / TRANSICIÓN -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">De sudor a sueldo · Transición económica</div>
+      <div class="split">
+        <div>
+          <h2>Hoy trabajamos por equity. Cuando facturemos, cobramos.</h2>
+          <p class="lead">El "sweat equity" no es para siempre. Al alcanzar <strong>15.000 € de MRR</strong> renegociamos: sueldo del CEO al 100%, servicios de Hacelerix y TheNucleo a precio de mercado, y comisión recurrente para Zenyx.</p>
+          <ul class="clean">
+            <li>Sin ingresos estables → valoración por <strong>valor contable neto</strong>.</li>
+            <li>Ya facturamos → <strong>1,5 × ARR</strong>.</li>
+            <li>Tope de pago a un saliente: <strong>15% de los ingresos</strong> mensuales.</li>
+          </ul>
+        </div>
+        <div class="card clk" data-clause="valoracion" style="text-align:center;padding:44px">
+          <p class="tag">Punto de inflexión</p>
+          <span class="kpi a" style="font-size:64px;margin-top:8px;display:block">15.000 €</span>
+          <p class="muted" style="margin-top:8px">MRR → se acaba el pago en acciones</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 · PROTECCIONES -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">Blindajes de futuro</div>
+      <h2>Pensado para crecer, vender y levantar ronda.</h2>
+      <div class="grid cols-4" style="margin-top:24px">
+        <div class="card clk" data-clause="dragtag"><span class="ic">🤝</span><h3>Drag &amp; Tag</h3><p>El 75% puede cerrar una venta y arrastrar; los demás tienen derecho a vender en las mismas condiciones.</p></div>
+        <div class="card clk" data-clause="ip"><span class="ic">©️</span><h3>Propiedad intelectual</h3><p>El código y la marca son de la <strong>sociedad</strong>, no del dev. Imprescindible para vender o invertir.</p></div>
+        <div class="card clk" data-clause="ronda"><span class="ic">🚀</span><h3>Listos para ronda</h3><p>Derecho de asunción preferente en ampliaciones y un hueco para la liquidación preferente del inversor.</p></div>
+        <div class="card clk" data-clause="nocomp"><span class="ic">🔒</span><h3>No competencia + confidencialidad</h3><p>Mientras somos socios, jugamos en el mismo equipo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 · POR QUÉ ES JUSTO (cierre) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="eyebrow">El equilibrio</div>
+      <h2>Protege al que construye y al que se queda — sin atrapar a nadie.</h2>
+      <div class="grid cols-3" style="margin-top:26px">
+        <div class="card"><h3 class="hl">Premia el trabajo</h3><p>El 60% se gana con resultados, no con promesas.</p></div>
+        <div class="card"><h3 class="hl-b">Reparte el poder</h3><p>Agilidad para Benja, veto del 75% para lo grande.</p></div>
+        <div class="card"><h3 style="color:var(--amber)">Salidas justas</h3><p>Good vs Bad, con tope de pago y aceleración si vendemos.</p></div>
+      </div>
+      <p class="lead" style="margin-top:24px">Es un punto de partida. Lo importante es que lo discutamos y lo hagamos nuestro.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-x" id="modalX" aria-label="Cerrar">×</button>
+    <span class="modal-badge" id="mBadge">Cláusula</span>
+    <h3 id="mTitle"></h3>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-foot">Resumen orientativo. El texto vinculante es el del Pacto de Socios (documento Word). Pendiente de revisión legal.</div>
+  </div>
+</div>
+
+<div class="brand"><b>Portal TheNucleo APP</b> · Pacto de Socios</div>
+<div class="chrome">
+  <span class="counter" id="counter">01 / 12</span>
+  <button class="nav-btn" id="prev" aria-label="Anterior">‹</button>
+  <button class="nav-btn" id="next" aria-label="Siguiente">›</button>
+</div>
+
+<script>
+/* ===== Cláusulas (resumen fiel del documento) ===== */
+const CLAUSES={
+  captable:{n:'Cláusula 3 · Capital',t:'Capital social y estructura',b:
+    'El capital se divide en un <strong>40% fijo</strong> (asignado el Día 1, en la constitución) y un <strong>60% variable</strong> sujeto al plan de consolidación (vesting). En la constitución los socios asumen el 100% de las participaciones; el 60% queda sometido a opción de compra hasta consolidarse.<ul><li>Totalmente consolidado: <strong>Benja 30% · TheNucleo 25% · Hacelerix 25% · Zenyx 20%</strong>.</li></ul>'},
+  vesting:{n:'Cláusula 4 · Vesting',t:'Plan de consolidación del 60%',b:
+    'Las participaciones no consolidadas se consolidan al cumplir los hitos del Anexo II. <strong>Benja</strong> consolida su +20% de forma lineal en 4 años, con un <strong>cliff de 12 meses</strong> (en el mes 12 libera un 5%, luego goteo mensual).<ul><li><strong>Hacelerix +15%</strong>: MVP, integraciones y estabilidad (25 agencias).</li><li><strong>Zenyx +14%</strong>: 5 early adopters, MRR ≥ 3.000€ y retención ≥ 70%.</li><li><strong>TheNucleo +11%</strong>: gestión de Ads 12 meses, leads incrementales y 15 clientes.</li></ul>Si un hito vence sin cumplirse, esas participaciones quedan sujetas a opción de compra a favor de la sociedad y los socios.'},
+  govBenja:{n:'Cláusula 8 · Administración',t:'Administrador único',b:
+    'La administración se encomienda a un <strong>administrador único: Benjamín Sanchis Vicent</strong>, con el poder de representación y las facultades legales para gestionar el día a día. Por mayoría reforzada (75%) podrá transformarse en un consejo de administración. En caso de empate en la Junta, decide el <strong>voto de calidad de Benja</strong>, salvo en las materias reservadas.'},
+  reservadas:{n:'Cláusula 9 · Materias reservadas',t:'Decisiones que exigen el 75%',b:
+    'Requieren el voto favorable de al menos el <strong>75% del capital</strong> (≈16 materias estilo VC):<ul><li>Vender, fusionar o reestructurar la sociedad.</li><li>Ampliar o reducir capital y excluir el derecho de asunción preferente.</li><li>Endeudarse por más de 30.000 € (salvo financiación pública).</li><li>Operaciones con partes vinculadas, presupuesto, cuentas y dividendos.</li><li>Cualquier operación sobre la propiedad intelectual.</li><li>Planes de incentivos sobre el capital y disolución.</li></ul>El voto de calidad NO se aplica aquí. El socio afectado por una operación vinculada no vota.'},
+  lockup:{n:'Cláusula 5 · Lock-up',t:'Permanencia y dedicación',b:
+    'Compromiso de permanencia y no transmisión de <strong>12 meses</strong> desde la constitución. Durante el lock-up ningún socio puede vender sus participaciones ni abandonar operativamente el proyecto; la dejadez de funciones cuenta como abandono. Incumplirlo implica la consideración automática de <strong>Bad Leaver</strong>. Benja ejerce de CEO con dedicación parcial (50%) remunerada.'},
+  goodleaver:{n:'Cláusula 13.2 · Good Leaver',t:'Salida amistosa',b:
+    'Se aplica en caso de <strong>fuerza mayor</strong> (fallecimiento, incapacidad), <strong>despido improcedente</strong> o <strong>salida pactada</strong> tras el lock-up.<ul><li>El socio <strong>conserva</strong> el porcentaje ya consolidado.</li><li>La sociedad (y, en su defecto, los socios) tiene derecho preferente a recomprar esas participaciones a <strong>Valor Justo de Mercado</strong>.</li><li>Lo no consolidado queda sujeto a la opción de compra del vesting.</li></ul>'},
+  badleaver:{n:'Cláusula 13.1 · Bad Leaver',t:'Salida penalizada',b:
+    'Se aplica si hay <strong>abandono antes del lock-up</strong>, dejadez/abandono operativo, fraude o incumplimiento sustancial.<ul><li><strong>Pierde todo lo no consolidado.</strong></li><li>La sociedad puede recomprar lo consolidado a <strong>valor nominal</strong>, con escalado temporal: 90% si se va en los primeros 9 meses, 75% entre el 9 y el 21, 50% entre el 21 y el 33.</li></ul>Redactado con una salvaguarda para evitar la nulidad por cláusula leonina.'},
+  valoracion:{n:'Cláusula 14 · Valoración',t:'Valoración y transición económica',b:
+    'Al alcanzar <strong>15.000 € de MRR</strong> de forma orgánica se renegocian las retribuciones: CEO al 100%, servicios de Hacelerix y TheNucleo a precio de mercado y comisión recurrente para Zenyx (fin del sweat equity).<ul><li>Valor Justo de Mercado: <strong>valor contable neto</strong> si no hay ingresos estables.</li><li><strong>1,5 × ARR</strong> si la sociedad ya factura de forma recurrente.</li><li>La sociedad no destina más del <strong>15% de sus ingresos</strong> mensuales a pagar a un saliente.</li></ul>'},
+  dragtag:{n:'Cláusulas 11 y 12 · Drag &amp; Tag',t:'Arrastre y acompañamiento',b:
+    '<strong>Drag-along (arrastre):</strong> si se recibe una oferta por el 100% de la sociedad y la aprueban socios que sumen al menos el <strong>75% del capital</strong>, pueden obligar a los demás a vender en las mismas condiciones y al mismo precio. Se acelera el vesting pendiente.<br><br><strong>Tag-along (acompañamiento):</strong> si un tercero quiere comprar las participaciones de un socio, los demás pueden vender también, en idénticas condiciones y de forma proporcional. Si el comprador no les acepta, el socio tampoco puede vender.'},
+  ip:{n:'Cláusula 16 · Propiedad intelectual',t:'La IP es de la sociedad',b:
+    'Toda la propiedad intelectual e industrial —<strong>código fuente y objeto, marca, diseño, dominios, know-how</strong>—, presente y futura, incluido lo desarrollado <strong>antes de constituir</strong> (pre-MVP), es titularidad de la Sociedad.<ul><li>Los socios la ceden de forma plena, irrevocable y en exclusiva, para todo el mundo y por el plazo máximo legal.</li><li>Obligación de que empleados y freelances firmen idéntica cesión antes de intervenir.</li></ul>Sin esto, el software podría quedar de quien lo programa: bloquearía cualquier ronda o venta.'},
+  ronda:{n:'Cláusula 15 · Futuras rondas',t:'Preparados para invertir',b:
+    '<strong>Derecho de asunción preferente:</strong> en toda ampliación de capital, los socios pueden suscribir nuevas participaciones a prorrata de su porcentaje para no diluirse. Excluir este derecho exige el 75%.<br><br><strong>Liquidación preferente:</strong> se deja previsto un "hueco" para que, en una futura ronda, pueda pactarse que el inversor cobre primero (con un múltiplo) en caso de venta. <strong>Hoy no está fijado</strong>: se negociará en la term-sheet.<ul><li>Nota: NO hay una cláusula de antidilución tipo ratchet; lo que protege frente a la dilución es el derecho de asunción preferente.</li></ul>'},
+  nocomp:{n:'Cláusulas 17 y 18 · No competencia',t:'No competencia y confidencialidad',b:
+    '<strong>No competencia:</strong> mientras se es socio, nadie trabaja ni colabora con la competencia (software B2B para agencias de marketing) sin autorización de la Junta.<br><br><strong>No captación:</strong> durante la vinculación y los <strong>2 años siguientes</strong> a la salida, nadie capta empleados, colaboradores ni clientes de la sociedad.<br><br><strong>Confidencialidad:</strong> obligación de secreto sobre la información de la sociedad, que subsiste 2 años tras dejar de ser socio.'},
+};
+
+/* ===== Navegación de slides ===== */
+const slides=[...document.querySelectorAll('.slide')];
+let i=0;const n=slides.length;
+const counter=document.getElementById('counter');
+const progress=document.getElementById('progress');
+const modal=document.getElementById('modal');
+function pad(x){return String(x+1).padStart(2,'0')}
+function show(idx){i=Math.max(0,Math.min(n-1,idx));
+  slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+  counter.textContent=pad(i)+' / '+n;progress.style.width=((i+1)/n*100)+'%';}
+document.getElementById('next').onclick=()=>show(i+1);
+document.getElementById('prev').onclick=()=>show(i-1);
+document.addEventListener('keydown',e=>{
+  if(modal.classList.contains('show')){if(e.key==='Escape')closeModal();return;}
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){show(i+1);e.preventDefault();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){show(i-1);e.preventDefault();}
+  else if(e.key==='Home'){show(0);}else if(e.key==='End'){show(n-1);}
+  else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
+});
+let tx=0;
+document.addEventListener('touchstart',e=>tx=e.changedTouches[0].clientX,{passive:true});
+document.addEventListener('touchend',e=>{if(modal.classList.contains('show'))return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)show(i+(d<0?1:-1));},{passive:true});
+
+/* ===== Modal de cláusulas ===== */
+const mBadge=document.getElementById('mBadge'),mTitle=document.getElementById('mTitle'),mBody=document.getElementById('mBody');
+function openClause(key){const c=CLAUSES[key];if(!c)return;mBadge.innerHTML=c.n;mTitle.innerHTML=c.t;mBody.innerHTML=c.b;modal.classList.add('show');}
+function closeModal(){modal.classList.remove('show');}
+document.querySelectorAll('[data-clause]').forEach(el=>el.addEventListener('click',ev=>{ev.stopPropagation();openClause(el.dataset.clause);}));
+document.getElementById('modalX').onclick=closeModal;
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+
+show(0);
+
+/* ===== Chart cap table ===== */
+window.addEventListener('load',()=>{
+  if(typeof Chart==='undefined')return;
+  Chart.defaults.font.family="Inter, sans-serif";Chart.defaults.color="#93A1C6";
+  const ctx=document.getElementById('capChart');
+  if(ctx){new Chart(ctx,{type:'doughnut',
+    data:{labels:['Benja','TheNucleo','Hacelerix','Zenyx'],
+      datasets:[{data:[30,25,25,20],backgroundColor:['#5B8CFF','#16E0BD','#FFB020','#FF6B9D'],
+        borderColor:'#0A0F1F',borderWidth:4,hoverOffset:10}]},
+    options:{cutout:'62%',plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>' '+c.label+': '+c.parsed+'%'}}}}});}
+});
+</script>
+</body>
+</html>
