@@ -20,7 +20,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflow:hidden;-webkit-font-smoothing:antialiased}
-.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.deck{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden}
 .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
   padding:64px clamp(28px,6vw,110px);opacity:0;visibility:hidden;transform:translateY(24px) scale(.99);
   transition:opacity .5s ease,transform .5s ease;
@@ -114,7 +114,42 @@ ul.clean.blue li::before{background:var(--primary);box-shadow:0 0 0 4px rgba(91,
 .modal-x{position:absolute;top:16px;right:18px;width:34px;height:34px;border-radius:10px;border:1px solid var(--line);
   background:rgba(255,255,255,.05);color:var(--text);font-size:20px;cursor:pointer;line-height:1;transition:.2s}
 .modal-x:hover{background:var(--bad);border-color:var(--bad);color:#fff}
-@media (max-width:820px){.split,.cols-2,.cols-3,.cols-4{grid-template-columns:1fr}.slide{padding:48px 24px}}
+@media (max-width:1024px){.cols-4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:820px){
+  .split,.cols-2,.cols-3{grid-template-columns:1fr}
+  .split{gap:24px}
+  /* slides scrollables en vez de cortar contenido */
+  .slide{justify-content:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:52px 20px 100px}
+  .slide-inner{margin:auto 0}
+  h1{font-size:29px;line-height:1.12}
+  h2{font-size:23px}
+  p.lead{font-size:15.5px;margin-top:10px}
+  .eyebrow{margin-bottom:12px;font-size:11.5px}
+  .chart-wrap{height:300px;margin-top:6px}
+  .grid{gap:14px}
+  .hint{display:none}
+  .brand{display:none}
+  .clk::after{opacity:.95}                       /* icono ⓘ siempre visible en tactil */
+  .chrome{left:50%;right:auto;transform:translateX(-50%);bottom:14px;gap:10px;
+    background:rgba(10,15,31,.65);padding:7px 10px;border-radius:16px;backdrop-filter:blur(10px);border:1px solid var(--line)}
+  .nav-btn{width:50px;height:50px;font-size:21px}
+  .cover-meta{gap:18px;margin-top:24px}
+  .modal-overlay{padding:16px}
+  .modal{padding:26px 22px 22px;max-height:86vh;border-radius:18px}
+  .modal h3{font-size:21px}
+  .modal-body{font-size:15px}
+}
+@media (max-width:560px){
+  .cols-4{grid-template-columns:1fr}
+  .slide{padding:50px 16px 100px}
+  h1{font-size:25px}
+  h2{font-size:20px}
+  .card{padding:18px}
+  .bar-row{grid-template-columns:74px 1fr 42px;gap:10px}
+  .bar-seg{font-size:9.5px}
+  .legend{gap:10px}.legend span{font-size:12.5px}
+  .cover-meta{gap:14px}
+}
 @media print{body{overflow:visible}.deck{height:auto}
   .slide{position:relative;opacity:1!important;visibility:visible!important;transform:none!important;height:100vh;page-break-after:always;break-after:page}
   .chrome,.brand,.hint,.progress,.modal-overlay{display:none!important}.clk::after{display:none}}
@@ -414,6 +449,7 @@ const modal=document.getElementById('modal');
 function pad(x){return String(x+1).padStart(2,'0')}
 function show(idx){i=Math.max(0,Math.min(n-1,idx));
   slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+  slides[i].scrollTop=0;                                  /* vuelve arriba al navegar */
   counter.textContent=pad(i)+' / '+n;progress.style.width=((i+1)/n*100)+'%';}
 document.getElementById('next').onclick=()=>show(i+1);
 document.getElementById('prev').onclick=()=>show(i-1);
@@ -424,9 +460,14 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='Home'){show(0);}else if(e.key==='End'){show(n-1);}
   else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen();}
 });
-let tx=0;
-document.addEventListener('touchstart',e=>tx=e.changedTouches[0].clientX,{passive:true});
-document.addEventListener('touchend',e=>{if(modal.classList.contains('show'))return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)show(i+(d<0?1:-1));},{passive:true});
+let tsx=0,tsy=0;
+document.addEventListener('touchstart',e=>{tsx=e.changedTouches[0].clientX;tsy=e.changedTouches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(modal.classList.contains('show'))return;
+  const dx=e.changedTouches[0].clientX-tsx, dy=e.changedTouches[0].clientY-tsy;
+  /* solo navega si el gesto es claramente horizontal (no interfiere con el scroll vertical ni con los taps) */
+  if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.5){show(i+(dx<0?1:-1));}
+},{passive:true});
 
 /* ===== Modal de cláusulas ===== */
 const mBadge=document.getElementById('mBadge'),mTitle=document.getElementById('mTitle'),mBody=document.getElementById('mBody');
